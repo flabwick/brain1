@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar with file tree -->
+        <div class="sidebar">
+            <div class="file-tree" id="fileTree">
+                <!-- File tree will be populated here dynamically -->
+            </div>
+            <div class="sidebar-actions">
+                <button id="createBtn" class="action-button">Create</button>
+                <button id="deleteBtn" class="action-button">Delete</button>
+                <button id="processBtn" class="action-button" disabled>Process</button>
+            </div>
+            <div class="create-panel" id="createPanel">
+                <div class="create-options">
+                    <button data-type="folder" class="create-option">Folder</button>
+                    <button data-type="txt" class="create-option">TXT</button>
+                    <button data-type="md" class="create-option">MD</button>
+                </div>
+                <div class="create-input">
+                    <input type="text" id="newItemName" placeholder="Enter name">
+                    <button id="confirmCreate">Create</button>
+                    <button id="cancelCreate">Cancel</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main content panel -->
+        <div class="main-panel">
+            <div class="file-view" id="fileView">
+                <div class="file-content" id="fileContent">
+                    <div class="empty-state">
+                        <h2>No file selected</h2>
+                        <p>Select a file from the sidebar to view its content</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
