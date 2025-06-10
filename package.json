@@ -4,11 +4,16 @@
   "description": "File manager application",
   "main": "backend/server.js",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js"
+    "start": "bash start.sh",
+    "backend": "node backend/server.js",
+    "backend-only": "bash start.sh --backend-only",
+    "frontend-only": "bash start.sh --frontend-only",
+    "dev": "nodemon backend/server.js",
+    "stop": "set -a && source .env && set +a && fuser -k $BACKEND_PORT/tcp || lsof -ti:$BACKEND_PORT | xargs -r kill; fuser -k $FRONTEND_PORT/tcp || lsof -ti:$FRONTEND_PORT | xargs -r kill"
   },
   "dependencies": {
     "dotenv": "^16.3.1",
+    "express": "^4.18.2",
     "mongodb": "^6.3.0"
   },
   "devDependencies": {

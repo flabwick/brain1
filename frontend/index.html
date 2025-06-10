@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Manager</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="/env-config.js"></script>
 </head>
 <body>
     <div class="app-container">
         <!-- Sidebar with file tree -->
         <div class="sidebar">
+            <div class="sidebar-tabs">
+                <button id="fileBtn" class="tab-button active">Files</button>
+                <button id="promptsBtn" class="tab-button">Prompts</button>
+            </div>
             <div class="file-tree" id="fileTree">
                 <!-- File tree will be populated here dynamically -->
             </div>
@@ -42,9 +47,82 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Prompts view (hidden by default) -->
+            <div class="prompts-view" id="promptsView" style="display: none;">
+                <div class="prompts-header">
+                    <h2>Prompts</h2>
+                    <button id="createPromptBtn" class="action-button">Create New Prompt</button>
+                </div>
+                <div class="prompts-list" id="promptsList">
+                    <!-- Prompts will be loaded here -->
+                </div>
+                
+                <div class="substitutes-header">
+                    <h2>Substitutes</h2>
+                    <button id="createSubstituteBtn" class="action-button">Create New Substitute</button>
+                </div>
+                <div class="substitutes-list" id="substitutesList">
+                    <!-- Substitutes will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Create/Edit Prompt Modal -->
+            <div class="modal" id="promptModal">
+                <div class="modal-content">
+                    <h2 id="promptModalTitle">Create New Prompt</h2>
+                    <div class="form-group">
+                        <label for="promptTitle">Title:</label>
+                        <input type="text" id="promptTitle" placeholder="Enter prompt title">
+                    </div>
+                    <div class="form-group">
+                        <label for="promptText">Text:</label>
+                        <textarea id="promptText" placeholder="Enter prompt text (use [[filepath]] for links)"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button id="savePromptBtn">Save</button>
+                        <button id="cancelPromptBtn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Create/Edit Substitute Modal -->
+            <div class="modal" id="substituteModal">
+                <div class="modal-content">
+                    <h2 id="substituteModalTitle">Create New Substitute</h2>
+                    <div class="form-group">
+                        <label for="substituteName">Name:</label>
+                        <input type="text" id="substituteName" placeholder="Enter substitute name">
+                    </div>
+                    <div class="form-group">
+                        <label for="substituteFilePath">File Path:</label>
+                        <input type="text" id="substituteFilePath" placeholder="Enter file path">
+                        <button id="browseFilesBtn" class="small-button">Browse</button>
+                    </div>
+                    <div class="modal-actions">
+                        <button id="saveSubstituteBtn">Save</button>
+                        <button id="cancelSubstituteBtn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- File Browser Modal -->
+            <div class="modal" id="fileBrowserModal">
+                <div class="modal-content">
+                    <h2>Select a File</h2>
+                    <div class="modal-file-tree" id="modalFileTree">
+                        <!-- File tree will be loaded here -->
+                    </div>
+                    <div class="modal-actions">
+                        <button id="selectFileBtn">Select</button>
+                        <button id="cancelFileBrowseBtn">Cancel</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="js/utils/error.js"></script>
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>
