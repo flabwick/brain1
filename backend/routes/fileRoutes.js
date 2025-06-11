@@ -31,5 +31,10 @@ module.exports = (db) => {
         fileController.deleteFile(req, res);
     });
     
+    // MOVE file or folder
+    router.post('/move', (req, res) => {
+        fileController.moveFile(req, res);
+    });
+    
     return router;
 };

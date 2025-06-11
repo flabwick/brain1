@@ -72,7 +72,8 @@ class FileContentComponent {
         fileHeader.appendChild(path);
         this.fileContentElement.appendChild(fileHeader);
 
-        if (fileData.type === 'txt' || fileData.type === 'md') {
+        // Always use whole file editor for txt and md
+        if (fileData.type === 'md' || fileData.type === 'txt') {
             this.renderWholeFileEditor(fileData);
         } else if (fileData.type === 'pdf' || fileData.type === 'epub') {
             this.renderBinaryContent(fileData);
@@ -87,37 +88,52 @@ class FileContentComponent {
     renderWholeFileEditor(fileData) {
         const contentContainer = document.createElement('div');
         contentContainer.className = 'file-content-text whole-file-editor';
-        contentContainer.textContent = fileData.content || '';
-        contentContainer.setAttribute('contenteditable', 'false');
         let editing = false;
 
-        // Enable editing on click
+        // Display mode
+        const showText = () => {
+            contentContainer.innerText = fileData.content || '';
+            contentContainer.setAttribute('contenteditable', 'false');
+            contentContainer.style.whiteSpace = 'pre-wrap';
+        };
+        showText();
+
+        // On click, switch to textarea for editing
         contentContainer.addEventListener('click', (e) => {
             if (!editing) {
                 editing = true;
-                contentContainer.setAttribute('contenteditable', 'true');
-                contentContainer.focus();
-                // Move caret to end
-                document.execCommand('selectAll', false, null);
-                document.getSelection().collapseToEnd();
-            }
-        });
+                const textarea = document.createElement('textarea');
+                textarea.className = 'whole-file-textarea';
+                textarea.value = fileData.content || '';
+                textarea.style.width = '100%';
+                textarea.style.height = Math.max(200, contentContainer.offsetHeight) + 'px';
+                textarea.style.fontFamily = 'monospace';
+                textarea.style.fontSize = '1em';
+                textarea.style.padding = '16px';
+                textarea.style.boxSizing = 'border-box';
+                textarea.style.border = '1px solid #4285f4';
+                textarea.style.borderRadius = '4px';
+                textarea.style.background = '#f8fafc';
+                textarea.style.resize = 'vertical';
+                contentContainer.innerHTML = '';
+                contentContainer.appendChild(textarea);
+                textarea.focus();
+                textarea.setSelectionRange(textarea.value.length, textarea.value.length);
 
-        // Save on blur
-        contentContainer.addEventListener('blur', async (e) => {
-            if (editing) {
-                editing = false;
-                contentContainer.setAttribute('contenteditable', 'false');
-                const newContent = contentContainer.innerText;
-                if (newContent !== fileData.content) {
-                    try {
-                        await this.saveFileContent(fileData.path, newContent);
-                        fileData.content = newContent;
-                    } catch (error) {
-                        showError('Failed to save file: ' + error.message);
-                        contentContainer.textContent = fileData.content;
+                // On blur, save and return to display mode
+                textarea.addEventListener('blur', async () => {
+                    editing = false;
+                    const newContent = textarea.value;
+                    if (newContent !== fileData.content) {
+                        try {
+                            await this.saveFileContent(fileData.path, newContent);
+                            fileData.content = newContent;
+                        } catch (error) {
+                            showError('Failed to save file: ' + error.message);
+                        }
                     }
-                }
+                    showText();
+                });
             }
         });
 

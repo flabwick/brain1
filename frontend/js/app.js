@@ -7,15 +7,21 @@ import fileContentComponent from './components/fileContent.js';
 import fileCreationComponent from './components/fileCreation.js';
 import promptsComponent from './components/prompts.js';
 import substitutesComponent from './components/substitutes.js';
-import { showError, toggleView } from './utils/uiUtils.js';
+import { showError, showSuccess, toggleView } from './utils/uiUtils.js';
+import { extractLinks, validateLink, resolveLinksInText } from './utils/fileUtils.js';
 
 // DOM Elements
 const fileBtn = document.getElementById('fileBtn');
 const promptsBtn = document.getElementById('promptsBtn');
 const deleteBtn = document.getElementById('deleteBtn');
+const sidebar = document.querySelector('.sidebar');
+const sidebarResizeHandle = document.querySelector('.sidebar-resize-handle');
 
 // State
 let currentView = 'file'; // 'file' or 'prompts'
+let sidebarResizing = false;
+let initialX;
+let initialWidth;
 
 // Initialize the application
 async function initApp() {
@@ -34,11 +40,73 @@ async function initApp() {
             fileContentComponent.loadFileContent(fileData);
         });
         
+        // Setup sidebar resize functionality
+        setupSidebarResize();
+        
+        // Restore sidebar width if previously saved
+        restoreSidebarWidth();
+        
         // Set initial view
         toggleView('file');
     } catch (error) {
         console.error('Error initializing app:', error);
         showError('Failed to initialize the application. Please reload the page.');
+    }
+}
+
+// Setup sidebar resize functionality
+function setupSidebarResize() {
+    if (sidebarResizeHandle) {
+        sidebarResizeHandle.addEventListener('mousedown', startResize);
+    }
+}
+
+// Start sidebar resize
+function startResize(e) {
+    sidebarResizing = true;
+    initialX = e.clientX;
+    initialWidth = sidebar.offsetWidth;
+    
+    // Add event listeners
+    document.addEventListener('mousemove', resize);
+    document.addEventListener('mouseup', stopResize);
+    
+    // Add a class to indicate resizing
+    document.body.classList.add('sidebar-resizing');
+    
+    // Prevent text selection during resize
+    e.preventDefault();
+}
+
+// Handle resize during mouse move
+function resize(e) {
+    if (sidebarResizing) {
+        const deltaX = e.clientX - initialX;
+        const newWidth = initialWidth + deltaX;
+        
+        // Apply min and max constraints
+        if (newWidth >= 150 && newWidth <= 500) {
+            sidebar.style.width = `${newWidth}px`;
+        }
+    }
+}
+
+// Stop sidebar resize
+function stopResize() {
+    sidebarResizing = false;
+    document.removeEventListener('mousemove', resize);
+    document.removeEventListener('mouseup', stopResize);
+    document.body.classList.remove('sidebar-resizing');
+    
+    // Save the sidebar width to localStorage for persistence
+    localStorage.setItem('sidebarWidth', sidebar.style.width);
+}
+
+// Restore sidebar width from localStorage
+function restoreSidebarWidth() {
+    const savedWidth = localStorage.getItem('sidebarWidth');
+    if (savedWidth) {
+        sidebar.style.width = savedWidth;
     }
 }
 

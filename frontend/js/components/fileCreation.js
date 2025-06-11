@@ -12,6 +12,7 @@ class FileCreationComponent {
         this.createPanel = document.getElementById('createPanel');
         this.createOptions = document.querySelectorAll('.create-option');
         this.newItemNameInput = document.getElementById('newItemName');
+        this.extensionDisplay = document.getElementById('extensionDisplay');
         this.confirmCreateBtn = document.getElementById('confirmCreate');
         this.cancelCreateBtn = document.getElementById('cancelCreate');
         
@@ -62,11 +63,15 @@ class FileCreationComponent {
         this.createPanel.classList.remove('hidden');
         this.newItemNameInput.value = '';
         this.currentFileType = null;
+        this.extensionDisplay.textContent = '';
         
         // Deselect all options
         this.createOptions.forEach(option => {
             option.classList.remove('selected');
         });
+
+        // Focus the input field
+        setTimeout(() => this.newItemNameInput.focus(), 10);
     }
     
     /**
@@ -95,6 +100,16 @@ class FileCreationComponent {
         
         if (selectedOption) {
             selectedOption.classList.add('selected');
+            
+            // Update the extension display based on the type
+            if (type === 'folder') {
+                this.extensionDisplay.textContent = '';
+            } else {
+                this.extensionDisplay.textContent = '.' + type;
+            }
+            
+            // Focus the input field after selecting a type
+            this.newItemNameInput.focus();
         }
     }
     
@@ -110,8 +125,15 @@ class FileCreationComponent {
         }
         
         if (!this.currentFileType) {
-            showError('Please select a file type');
+            showError('Please select a file type first');
             return;
+        }
+        
+        // Check if name already contains the extension and remove it if it does
+        if (this.currentFileType !== 'folder' && name.endsWith('.' + this.currentFileType)) {
+            const extensionPart = '.' + this.currentFileType;
+            const nameWithoutExtension = name.substring(0, name.length - extensionPart.length);
+            this.newItemNameInput.value = nameWithoutExtension;
         }
         
         try {

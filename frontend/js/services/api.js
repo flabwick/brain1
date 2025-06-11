@@ -146,27 +146,14 @@ class ApiService {
      */
     async moveFileOrFolder(sourcePath, targetPath) {
         try {
-            const url = this.backendUrl ? 
-                `${this.backendUrl}/api/files/move` : 
-                `/api/files/move`;
-                
-            const response = await fetch(url, {
+            // Use the standard request method to ensure consistent error handling
+            return await this.request('/files/move', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify({
                     sourcePath,
                     targetPath
                 })
             });
-            
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Failed to move file/folder');
-            }
-            
-            return await response.json();
         } catch (error) {
             console.error('Move file/folder error:', error);
             throw error;

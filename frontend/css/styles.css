@@ -23,12 +23,45 @@ html, body {
 /* Sidebar styles */
 .sidebar {
     width: 250px;
+    min-width: 150px;
+    max-width: 500px;
     display: flex;
     flex-direction: column;
     background-color: #f5f5f5;
     border-right: 1px solid #ddd;
     height: 100%;
     overflow: hidden;
+    position: relative;
+}
+
+/* Sidebar resize handle */
+.sidebar-resize-handle {
+    width: 5px;
+    height: 100%;
+    background-color: transparent;
+    cursor: col-resize;
+    position: absolute;
+    right: -2px;
+    top: 0;
+    z-index: 100;
+}
+
+.sidebar-resize-handle:hover {
+    background-color: rgba(0, 123, 255, 0.2);
+}
+
+/* Sidebar resizing styles */
+.sidebar-resizing {
+    cursor: col-resize;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.sidebar-resizing .file-tree,
+.sidebar-resizing .main-panel {
+    pointer-events: none;
 }
 
 /* Additional styles for the modular components */
@@ -101,6 +134,50 @@ html, body {
     display: flex;
     align-items: center;
     border-radius: 4px;
+    margin-bottom: 2px;
+    position: relative;
+}
+
+.file-tree-item:hover {
+    background-color: #f0f0f0;
+}
+
+.file-tree-item.selected {
+    background-color: #e0e0ff;
+}
+
+.file-icon {
+    margin-right: 5px;
+}
+
+.file-tree-children {
+    margin-left: 15px;
+    border-left: 1px dotted #ccc;
+    padding-left: 5px;
+}
+
+.file-tree-children.hidden {
+    display: none;
+}
+
+.has-children.collapsed::before {
+    content: '▶';
+    font-size: 12px;
+    margin-right: 5px;
+    color: #555;
+    display: inline-block;
+    vertical-align: middle;
+    pointer-events: none;  /* Ensures clicks pass through to the parent element */
+}
+
+.has-children:not(.collapsed)::before {
+    content: '▼';
+    font-size: 12px;
+    margin-right: 5px;
+    color: #555;
+    display: inline-block;
+    vertical-align: middle;
+    pointer-events: none;  /* Ensures clicks pass through to the parent element */
 }
 
 /* Main panel styles */
@@ -132,7 +209,64 @@ html, body {
     border-top: 1px solid #ddd;
     padding: 10px;
     background-color: #f9f9f9;
+}
+
+.create-panel.hidden {
     display: none;
+}
+
+.create-options {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.create-option {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #f5f5f5;
+}
+
+.create-option.selected {
+    background-color: #e0e0ff;
+    border-color: #007bff;
+}
+
+.create-input {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.name-input-container {
+    display: flex;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.name-input-container input {
+    flex: 1;
+    border: none;
+    padding: 8px;
+    outline: none;
+}
+
+.extension-display {
+    padding: 8px;
+    background-color: #eee;
+    color: #888;
+    font-style: italic;
+    border-left: 1px solid #ddd;
+    user-select: none;
+}
+
+.create-buttons {
+    display: flex;
+    gap: 10px;
 }
 
 /* Drag and drop styles */
@@ -312,46 +446,79 @@ html, body {
 /* Prompt component styles */
 .prompt-item {
     margin-bottom: 10px;
-    padding: 10px;
+    padding: 15px;
     background-color: #f9f9f9;
     border-radius: 4px;
     cursor: pointer;
     position: relative;
+    border: 1px solid #eee;
+    transition: box-shadow 0.2s, background-color 0.2s;
 }
 
 .prompt-item:hover {
     background-color: #f0f0f0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .prompt-item.selected {
-    background-color: #e0e0ff;
+    background-color: #e6f2ff;
+    border-color: #99c2ff;
 }
 
 .prompt-timestamp {
     color: #777;
     font-size: 0.8em;
+    margin-top: 5px;
 }
 
 .prompt-actions {
     position: absolute;
     top: 10px;
     right: 10px;
+    display: flex;
+    gap: 5px;
 }
 
 .prompt-view {
     margin-top: 20px;
-    padding: 15px;
+    padding: 20px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
 .prompt-text {
     white-space: pre-wrap;
     font-family: monospace;
     margin-top: 15px;
-    padding: 10px;
-    background-color: #f5f5f5;
+    padding: 15px;
+    background-color: #f7f7f7;
     border-radius: 4px;
+    border: 1px solid #eee;
+}
+
+.prompt-links-list {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    border: 1px solid #eee;
+}
+
+.prompt-link-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.prompt-link-item:last-child {
+    border-bottom: none;
+}
+
+.prompt-link-item.error {
+    color: #dc3545;
 }
 
 .file-link {
@@ -360,65 +527,48 @@ html, body {
     cursor: pointer;
 }
 
-/* Substitutes component styles */
-.substitutes-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
+.file-link.error {
+    color: #dc3545;
+    border-bottom: 1px dashed #dc3545;
 }
 
-.substitutes-table th, 
-.substitutes-table td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-.substitutes-table th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-}
-
-.substitutes-table tr:hover {
-    background-color: #f5f5f5;
-}
-
-/* Modal file browser styles */
-.modal-file-tree {
-    max-height: 300px;
-    overflow-y: auto;
-    margin: 15px 0;
-    border: 1px solid #ddd;
-    padding: 10px;
-}
-
-.modal-file-tree-list {
-    list-style: none;
-    padding-left: 15px;
-    margin: 0;
-}
-
-.modal-file-tree-item {
-    padding: 5px;
+.copy-btn, .edit-btn, .delete-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
-    display: flex;
+    font-size: 0.9em;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
 }
 
-.modal-file-tree-item:hover {
-    background-color: #f0f0f0;
+.copy-btn {
+    background-color: #28a745;
+    color: white;
 }
 
-.modal-file-tree-item.selected {
-    background-color: #e0e0ff;
+.copy-btn:hover {
+    background-color: #218838;
 }
 
-.modal-file-tree-children {
-    margin-left: 15px;
+.edit-btn {
+    background-color: #ffc107;
+    color: #212529;
 }
 
-.modal-file-tree-children.hidden {
-    display: none;
+.edit-btn:hover {
+    background-color: #e0a800;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
 }
 
 /* Utilities */
@@ -435,7 +585,21 @@ html, body {
     transition: opacity 0.5s;
 }
 
-.error-popup.fade-out {
+.success-message {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: opacity 0.5s;
+}
+
+.error-popup.fade-out,
+.success-message.fade-out {
     opacity: 0;
 }
 
@@ -468,4 +632,87 @@ html, body {
 
 .hidden {
     display: none;
+}
+
+/* Markdown line editor styles */
+.md-line-editor {
+  margin-top: 1em;
+}
+.md-line-block {
+  padding: 2px 8px;
+  min-height: 1.8em;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+.md-line-block:hover {
+  background: #f0f0f0;
+}
+.md-line-input, .md-line-textarea {
+  width: 100%;
+  font-size: 1em;
+  padding: 2px 8px;
+  border: 1px solid #bbb;
+  border-radius: 4px;
+  outline: none;
+  box-sizing: border-box;
+  min-height: 1.8em;
+  background: #fffbe6;
+  resize: none;
+}
+.md-line-textarea {
+  font-family: inherit;
+  line-height: 1.5;
+  margin: 0;
+  display: block;
+}
+.md-line-block h1, .md-line-block h2, .md-line-block h3, .md-line-block h4, .md-line-block h5, .md-line-block h6 {
+  margin: 0.2em 0;
+}
+.md-line-block ul, .md-line-block ol {
+  margin: 0.2em 0 0.2em 1.5em;
+  padding: 0;
+}
+.md-line-block strong {
+  font-weight: bold;
+}
+.md-line-block em {
+  font-style: italic;
+}
+.md-line-editable {
+  min-height: 1.8em;
+  font-size: 1em;
+  font-family: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 2px 8px;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  color: inherit;
+  display: block;
+  transition: background 0.15s;
+}
+.md-line-editable:focus {
+  background: #fffbe6;
+}
+
+.whole-file-textarea, .md-whole-textarea {
+  width: 100%;
+  min-height: 200px;
+  font-family: monospace;
+  font-size: 1em;
+  padding: 16px;
+  box-sizing: border-box;
+  border: 1px solid #4285f4;
+  border-radius: 4px;
+  background: #f8fafc;
+  resize: vertical;
+  outline: none;
+  margin: 0;
+  display: block;
 }

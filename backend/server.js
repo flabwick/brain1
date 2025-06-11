@@ -79,6 +79,7 @@ async function initServer() {
         app.post('/api/files', (req, res) => fileController.createFile(req, res));
         app.put('/api/files/file', (req, res) => fileController.updateFile(req, res));
         app.delete('/api/files/file', (req, res) => fileController.deleteFile(req, res));
+        app.post('/api/files/move', (req, res) => fileController.moveFile(req, res));
         
         // Prompt routes
         app.get('/api/prompts', (req, res) => promptController.getAllPrompts(req, res));

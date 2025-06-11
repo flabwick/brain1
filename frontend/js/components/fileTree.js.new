@@ -141,26 +141,12 @@ class FileTreeComponent {
         // Add root level
         filesByParent[''] = [];
         
-        // Group files by parent path - normalize paths to handle inconsistencies
+        // Group files by parent path
         files.forEach(file => {
-            // Normalize the parent path (remove trailing slash if it exists)
-            const normalizedParentPath = file.parentPath.endsWith('/') 
-                ? file.parentPath.slice(0, -1) 
-                : file.parentPath;
-            
-            if (!filesByParent[normalizedParentPath]) {
-                filesByParent[normalizedParentPath] = [];
+            if (!filesByParent[file.parentPath]) {
+                filesByParent[file.parentPath] = [];
             }
-            filesByParent[normalizedParentPath].push(file);
-            
-            // If we've normalized a path, also create an entry with the original path
-            // so our lookups work in the rest of the code
-            if (normalizedParentPath !== file.parentPath) {
-                if (!filesByParent[file.parentPath]) {
-                    filesByParent[file.parentPath] = [];
-                }
-                filesByParent[file.parentPath].push(file);
-            }
+            filesByParent[file.parentPath].push(file);
         });
         
         // Render root level files and folders
@@ -187,12 +173,10 @@ class FileTreeComponent {
      * @param {object} filesByParent - Files grouped by parent path
      */
     renderFileTreeLevel(files, container, filesByParent) {
-        // Create a new ul for this level
         const ul = document.createElement('ul');
         ul.className = 'file-tree-list';
         container.appendChild(ul);
         
-        // Process all files at this level
         files.forEach(file => {
             const li = document.createElement('li');
             li.className = 'file-tree-item draggable';
@@ -290,16 +274,8 @@ class FileTreeComponent {
             
             // If it's a folder, handle children
             if (file.type === 'folder') {
-                // Check for children with both path/ and path as parentPath due to inconsistency in data
                 const childPath = file.path + '/';
-                const childPathNoSlash = file.path;
-                
-                // Combine children from both possible parent paths
-                const childrenWithSlash = filesByParent[childPath] || [];
-                const childrenNoSlash = filesByParent[childPathNoSlash] || [];
-                const children = [...childrenWithSlash, ...childrenNoSlash];
-                
-                console.log(`Folder ${file.path}: Found ${childrenWithSlash.length} with slash, ${childrenNoSlash.length} without slash`);
+                const children = filesByParent[childPath] || [];
                 
                 // Create container for children
                 const childContainer = document.createElement('div');
@@ -322,9 +298,6 @@ class FileTreeComponent {
                 
                 // Sort and render children if any
                 if (children.length > 0) {
-                    console.log(`Rendering ${children.length} children for ${file.path}:`, 
-                        children.map(c => `${c.name} (${c.path})`));
-                    
                     children.sort((a, b) => {
                         // Sort folders first, then by name
                         if (a.type === 'folder' && b.type !== 'folder') return -1;
@@ -333,8 +306,6 @@ class FileTreeComponent {
                     });
                     
                     this.renderFileTreeLevel(children, childContainer, filesByParent);
-                } else {
-                    console.log(`No children found for ${file.path}`);
                 }
                 
                 // Add click handler for folders

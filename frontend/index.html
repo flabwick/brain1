@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Manager</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/fileTree.css">
     <script src="/env-config.js"></script>
 </head>
 <body>
@@ -18,21 +19,28 @@
             <div class="file-tree" id="fileTree">
                 <!-- File tree will be populated here dynamically -->
             </div>
+            <!-- Resize handle for the sidebar -->
+            <div class="sidebar-resize-handle"></div>
             <div class="sidebar-actions">
                 <button id="createBtn" class="action-button">Create</button>
                 <button id="deleteBtn" class="action-button">Delete</button>
                 <button id="processBtn" class="action-button" disabled>Process</button>
             </div>
-            <div class="create-panel" id="createPanel">
+            <div class="create-panel hidden" id="createPanel">
                 <div class="create-options">
                     <button data-type="folder" class="create-option">Folder</button>
                     <button data-type="txt" class="create-option">TXT</button>
                     <button data-type="md" class="create-option">MD</button>
                 </div>
                 <div class="create-input">
-                    <input type="text" id="newItemName" placeholder="Enter name">
-                    <button id="confirmCreate">Create</button>
-                    <button id="cancelCreate">Cancel</button>
+                    <div class="name-input-container">
+                        <input type="text" id="newItemName" placeholder="Enter name">
+                        <span id="extensionDisplay" class="extension-display"></span>
+                    </div>
+                    <div class="create-buttons">
+                        <button id="confirmCreate">Create</button>
+                        <button id="cancelCreate">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>

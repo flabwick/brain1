@@ -53,6 +53,37 @@ export function showError(error, context = '') {
 }
 
 /**
+ * Show success message
+ * @param {string} message - Success message
+ */
+export function showSuccess(message) {
+    const successPopup = document.createElement('div');
+    successPopup.className = 'success-message';
+    
+    // Add success icon
+    const successIcon = document.createElement('span');
+    successIcon.className = 'success-icon';
+    successIcon.innerHTML = '✅';
+    successPopup.appendChild(successIcon);
+    
+    // Add success message
+    const successText = document.createElement('span');
+    successText.className = 'success-text';
+    successText.textContent = message;
+    successPopup.appendChild(successText);
+    
+    document.body.appendChild(successPopup);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        successPopup.classList.add('fade-out');
+        setTimeout(() => {
+            successPopup.remove();
+        }, 500); // Fade out takes 0.5s
+    }, 3000);
+}
+
+/**
  * Show loading indicator
  * @returns {object} - Loading indicator object with remove method
  */

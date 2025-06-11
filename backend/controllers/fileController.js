@@ -119,6 +119,72 @@ class FileController {
             res.status(500).json({ error: 'Failed to delete file' });
         }
     }
+
+    // Move file or folder to a new location
+    async moveFile(req, res) {
+        try {
+            const { sourcePath, targetPath } = req.body;
+            
+            if (!sourcePath || !targetPath) {
+                return res.status(400).json({ error: 'Source path and target path are required' });
+            }
+            
+            // Check if source file exists
+            const sourceFile = await this.fileModel.getByPath(sourcePath);
+            if (!sourceFile) {
+                return res.status(404).json({ error: 'Source file not found' });
+            }
+            
+            // Check if target folder exists
+            const targetFolder = await this.fileModel.getByPath(targetPath);
+            if (!targetFolder) {
+                return res.status(404).json({ error: 'Target folder not found' });
+            }
+            
+            // Make sure the target is a folder
+            if (targetFolder.type !== 'folder') {
+                return res.status(400).json({ error: 'Target must be a folder' });
+            }
+            
+            // Create the new path for the moved file
+            const fileName = sourcePath.split('/').pop();
+            const newPath = targetPath === '/' ? `/${fileName}` : `${targetPath}/${fileName}`;
+            
+            // Check if file with new path already exists
+            const existingFile = await this.fileModel.getByPath(newPath);
+            if (existingFile) {
+                return res.status(409).json({ error: 'A file with the same name already exists in the target folder' });
+            }
+            
+            // Update the file's path and parentPath
+            await this.fileModel.update(sourcePath, {
+                path: newPath,
+                parentPath: targetPath
+            });
+            
+            // If it's a folder, update all children paths
+            if (sourceFile.type === 'folder') {
+                // Get all children
+                const children = await this.fileModel.getByParentPath(sourcePath + '/');
+                
+                // Update each child's path
+                for (const child of children) {
+                    const newChildPath = child.path.replace(sourcePath, newPath);
+                    const newParentPath = child.parentPath.replace(sourcePath, newPath);
+                    
+                    await this.fileModel.update(child.path, {
+                        path: newChildPath,
+                        parentPath: newParentPath
+                    });
+                }
+            }
+            
+            res.status(200).json({ message: 'File moved successfully', newPath });
+        } catch (error) {
+            console.error('Error moving file:', error);
+            res.status(500).json({ error: 'Failed to move file' });
+        }
+    }
 }
 
 module.exports = FileController;
