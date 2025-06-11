@@ -9,11 +9,17 @@ class FileTreeComponent {
         this.fileTreeElement = document.getElementById('fileTree');
         this.currentSelectedItem = null;
         this.onFileSelect = null; // Callback for when a file is selected
+        this.onPromptsSelect = null; // Callback when Prompts entry clicked
         this.draggedItem = null; // Track the item being dragged
         this.expandedFolders = new Set(); // Track expanded folders
         
         // Load expanded folders from localStorage if available
         this.loadExpandedFoldersState();
+
+        // Ensure root folder starts expanded
+        if (!this.expandedFolders.has('')) {
+            this.expandedFolders.add('');
+        }
         
         // Initialize drag and drop event listeners for the file tree container
         this.initDragAndDrop();
@@ -114,6 +120,14 @@ class FileTreeComponent {
     setOnFileSelectCallback(callback) {
         this.onFileSelect = callback;
     }
+
+    /**
+     * Set callback for Prompts selection
+     * @param {function} callback - Function to call when Prompts item clicked
+     */
+    setOnPromptsSelectCallback(callback) {
+        this.onPromptsSelect = callback;
+    }
     
     /**
      * Load the file tree
@@ -134,7 +148,11 @@ class FileTreeComponent {
     renderFileTree(files) {
         // Clear the file tree
         this.fileTreeElement.innerHTML = '';
-        
+
+        const rootList = document.createElement('ul');
+        rootList.className = 'file-tree-list';
+        this.fileTreeElement.appendChild(rootList);
+
         // Group files by parent path
         const filesByParent = {};
         
@@ -163,16 +181,87 @@ class FileTreeComponent {
             }
         });
         
-        // Render root level files and folders
+        // Prompts entry
+        const promptsLi = document.createElement('li');
+        promptsLi.className = 'file-tree-item';
+        promptsLi.dataset.type = 'prompts';
+        const promptsHeader = document.createElement('div');
+        promptsHeader.className = 'file-tree-item-header';
+        const promptsIcon = document.createElement('span');
+        promptsIcon.className = 'file-icon';
+        promptsIcon.textContent = '💬';
+        const promptsName = document.createElement('span');
+        promptsName.className = 'file-name';
+        promptsName.textContent = 'Prompts';
+        promptsHeader.appendChild(promptsIcon);
+        promptsHeader.appendChild(promptsName);
+        promptsLi.appendChild(promptsHeader);
+        promptsLi.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.selectItem(promptsLi, { type: 'prompts' });
+            if (this.onPromptsSelect) this.onPromptsSelect();
+        });
+        rootList.appendChild(promptsLi);
+
+        // Root files entry
+        const rootLi = document.createElement('li');
+        rootLi.className = 'file-tree-item has-children';
+        rootLi.dataset.path = '';
+        rootLi.dataset.type = 'folder';
+        const rootHeader = document.createElement('div');
+        rootHeader.className = 'file-tree-item-header';
+        const rootIcon = document.createElement('span');
+        rootIcon.className = 'file-icon';
+        rootIcon.textContent = '📁';
+        const rootName = document.createElement('span');
+        rootName.className = 'file-name';
+        rootName.textContent = 'Files';
+        rootHeader.appendChild(rootIcon);
+        rootHeader.appendChild(rootName);
+        rootLi.appendChild(rootHeader);
+        const rootChildren = document.createElement('div');
+        rootChildren.className = 'file-tree-children';
+        rootLi.appendChild(rootChildren);
+        rootList.appendChild(rootLi);
+
+        // Expand state for root
+        if (!this.expandedFolders.has('')) {
+            rootLi.classList.add('collapsed');
+            rootChildren.classList.add('hidden');
+        }
+
+        rootHeader.addEventListener('click', (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+
+            rootLi.classList.toggle('collapsed');
+            rootChildren.classList.toggle('hidden');
+
+            if (rootLi.classList.contains('collapsed')) {
+                this.expandedFolders.delete('');
+            } else {
+                this.expandedFolders.add('');
+            }
+            this.saveExpandedFoldersState();
+
+            if (this.currentSelectedItem) {
+                this.currentSelectedItem.classList.remove('selected');
+            }
+            rootLi.classList.add('selected');
+            this.currentSelectedItem = rootLi;
+            if (this.onFileSelect) {
+                this.onFileSelect({ type: 'folder', path: '' });
+            }
+        });
+
+        // Render root level files and folders inside rootChildren
         const rootFiles = filesByParent[''] || [];
         rootFiles.sort((a, b) => {
-            // Sort folders first, then by name
             if (a.type === 'folder' && b.type !== 'folder') return -1;
             if (a.type !== 'folder' && b.type === 'folder') return 1;
             return a.name.localeCompare(b.name);
         });
-        
-        this.renderFileTreeLevel(rootFiles, this.fileTreeElement, filesByParent);
+        this.renderFileTreeLevel(rootFiles, rootChildren, filesByParent);
         
         // Add a click handler to the file tree to prevent event bubbling
         this.fileTreeElement.addEventListener('click', (e) => {
@@ -261,7 +350,13 @@ class FileTreeComponent {
                 if (this.draggedItem && file.type === 'folder') {
                     const sourcePath = this.draggedItem.dataset.path;
                     const targetPath = file.path;
-                    
+
+                    // Prevent moving folder into itself or its children
+                    if (targetPath === sourcePath || targetPath.startsWith(sourcePath + '/')) {
+                        showError('Invalid move: cannot move a folder into itself');
+                        return;
+                    }
+
                     try {
                         await this.moveFileOrFolder(sourcePath, targetPath);
                         
@@ -404,8 +499,8 @@ class FileTreeComponent {
         element.classList.add('selected');
         this.currentSelectedItem = element;
         
-        // Only call the callback for files, not folders
-        if (this.onFileSelect && fileData.type !== 'folder') {
+        // Call callback for everything except the Prompts entry
+        if (this.onFileSelect && fileData.type !== 'prompts') {
             this.onFileSelect(fileData);
         }
     }
