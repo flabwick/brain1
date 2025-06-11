@@ -73,7 +73,7 @@ class FileTreeComponent {
 
             if (this.draggedItem) {
                 const targetItem = e.target.closest('.file-tree-item');
-                const targetPath = targetItem ? targetItem.dataset.path : '';
+                const targetPath = targetItem ? targetItem.dataset.path : '/';
                 const sourcePath = this.draggedItem.dataset.path;
                 
                 try {
