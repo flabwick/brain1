@@ -119,15 +119,15 @@ export function toggleView(viewName) {
         fileView.style.display = 'block';
         promptsView.classList.add('hidden');
         promptsView.style.display = 'none';
-        fileBtn.classList.add('active');
-        promptsBtn.classList.remove('active');
+        if (fileBtn) fileBtn.classList.add('active');
+        if (promptsBtn) promptsBtn.classList.remove('active');
     } else if (viewName === 'prompts') {
         fileView.classList.add('hidden');
         fileView.style.display = 'none';
         promptsView.classList.remove('hidden');
         promptsView.style.display = 'block';
-        fileBtn.classList.remove('active');
-        promptsBtn.classList.add('active');
+        if (fileBtn) fileBtn.classList.remove('active');
+        if (promptsBtn) promptsBtn.classList.add('active');
     }
 }
 

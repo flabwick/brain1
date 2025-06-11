@@ -11,8 +11,6 @@ import { showError, showSuccess, toggleView } from './utils/uiUtils.js';
 import { extractLinks, validateLink, resolveLinksInText } from './utils/fileUtils.js';
 
 // DOM Elements
-const fileBtn = document.getElementById('fileBtn');
-const promptsBtn = document.getElementById('promptsBtn');
 const deleteBtn = document.getElementById('deleteBtn');
 const sidebar = document.querySelector('.sidebar');
 const sidebarResizeHandle = document.querySelector('.sidebar-resize-handle');
@@ -35,9 +33,15 @@ async function initApp() {
         // Load file tree
         await fileTreeComponent.loadFileTree();
         
-        // Set file tree select callback
+        // Set file tree callbacks
         fileTreeComponent.setOnFileSelectCallback(fileData => {
+            if (currentView !== 'file') {
+                openFileView();
+            }
             fileContentComponent.loadFileContent(fileData);
+        });
+        fileTreeComponent.setOnPromptsSelectCallback(() => {
+            openPromptsView();
         });
         
         // Setup sidebar resize functionality
@@ -47,7 +51,7 @@ async function initApp() {
         restoreSidebarWidth();
         
         // Set initial view
-        toggleView('file');
+        openFileView();
     } catch (error) {
         console.error('Error initializing app:', error);
         showError('Failed to initialize the application. Please reload the page.');
@@ -110,24 +114,20 @@ function restoreSidebarWidth() {
     }
 }
 
+function openFileView() {
+    toggleView('file');
+    currentView = 'file';
+}
+
+async function openPromptsView() {
+    toggleView('prompts');
+    currentView = 'prompts';
+    await promptsComponent.loadPrompts();
+    await substitutesComponent.loadSubstitutes();
+}
+
 // Setup event listeners
 function setupEventListeners() {
-    // File view button
-    fileBtn.addEventListener('click', () => {
-        toggleView('file');
-        currentView = 'file';
-    });
-    
-    // Prompts view button
-    promptsBtn.addEventListener('click', async () => {
-        toggleView('prompts');
-        currentView = 'prompts';
-        
-        // Load prompts and substitutes
-        await promptsComponent.loadPrompts();
-        await substitutesComponent.loadSubstitutes();
-    });
-    
     // Delete button
     deleteBtn.addEventListener('click', () => {
         deleteSelectedItem();

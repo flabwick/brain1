@@ -144,10 +144,10 @@ class FileCreationComponent {
             if (selectedElement) {
                 const path = selectedElement.dataset.path;
                 const type = selectedElement.dataset.type;
-                
+
                 // If it's a folder, use its path as parent path
                 if (type === 'folder') {
-                    parentPath = path + '/';
+                    parentPath = path ? path + '/' : '';
                 } else {
                     // If it's a file, use its parent path
                     const pathParts = path.split('/');
