@@ -10,13 +10,18 @@
 
 .file-tree-item {
     cursor: pointer;
-    padding: 4px;
+    padding: 0;
     user-select: none;
-    display: flex;
-    align-items: center;
+    display: block;
     margin-bottom: 2px;
     position: relative;
     width: 100%;
+}
+
+.file-tree-item-header {
+    display: flex;
+    align-items: center;
+    padding: 4px;
 }
 
 .file-icon {
@@ -57,11 +62,11 @@
 }
 
 /* Make folder highlight more visible */
-.file-tree-item:hover {
+.file-tree-item:hover > .file-tree-item-header {
     background-color: #f0f0f0;
 }
 
-.file-tree-item.selected {
+.file-tree-item.selected > .file-tree-item-header {
     background-color: #e0e0ff;
 }
 

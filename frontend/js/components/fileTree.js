@@ -70,17 +70,17 @@ class FileTreeComponent {
             e.preventDefault();
             e.stopPropagation();
             this.fileTreeElement.classList.remove('drag-over');
-            
-            if (this.draggedItem && e.target.closest('.file-tree-item')) {
+
+            if (this.draggedItem) {
                 const targetItem = e.target.closest('.file-tree-item');
-                const targetPath = targetItem.dataset.path;
+                const targetPath = targetItem ? targetItem.dataset.path : '';
                 const sourcePath = this.draggedItem.dataset.path;
                 
                 try {
                     await this.moveFileOrFolder(sourcePath, targetPath);
                     
                     // Ensure target folder is expanded after moving a file into it
-                    if (targetItem.dataset.type === 'folder') {
+                    if (targetItem && targetItem.dataset.type === 'folder') {
                         this.expandedFolders.add(targetPath);
                         this.saveExpandedFoldersState();
                         console.log(`Target folder expanded: ${targetPath}`);
@@ -199,7 +199,11 @@ class FileTreeComponent {
             li.dataset.path = file.path;
             li.dataset.type = file.type;
             li.draggable = true; // Make the item draggable
-            
+
+            // Container for the clickable row
+            const header = document.createElement('div');
+            header.className = 'file-tree-item-header';
+
             const icon = document.createElement('span');
             icon.className = 'file-icon';
             // Use different icons for expanded/collapsed folders
@@ -209,13 +213,15 @@ class FileTreeComponent {
             } else {
                 icon.textContent = this.getFileIcon(file.type);
             }
-            
+
             const name = document.createElement('span');
             name.className = 'file-name';
             name.textContent = file.name;
-            
-            li.appendChild(icon);
-            li.appendChild(name);
+
+            header.appendChild(icon);
+            header.appendChild(name);
+
+            li.appendChild(header);
             
             // Append the li to the ul
             ul.appendChild(li);
@@ -282,7 +288,7 @@ class FileTreeComponent {
             
             // If it's a file, add click event to select it
             if (file.type !== 'folder') {
-                li.addEventListener('click', (event) => {
+                header.addEventListener('click', (event) => {
                     event.stopPropagation();
                     this.selectItem(li, file);
                 });
@@ -338,7 +344,7 @@ class FileTreeComponent {
                 }
                 
                 // Add click handler for folders
-                li.addEventListener('click', (event) => {
+                header.addEventListener('click', (event) => {
                     event.stopPropagation();
                     event.preventDefault();
                     

@@ -124,8 +124,8 @@ class FileController {
     async moveFile(req, res) {
         try {
             const { sourcePath, targetPath } = req.body;
-            
-            if (!sourcePath || !targetPath) {
+
+            if (!sourcePath || targetPath === undefined || targetPath === null) {
                 return res.status(400).json({ error: 'Source path and target path are required' });
             }
             
@@ -135,20 +135,23 @@ class FileController {
                 return res.status(404).json({ error: 'Source file not found' });
             }
             
-            // Check if target folder exists
-            const targetFolder = await this.fileModel.getByPath(targetPath);
-            if (!targetFolder) {
-                return res.status(404).json({ error: 'Target folder not found' });
-            }
-            
-            // Make sure the target is a folder
-            if (targetFolder.type !== 'folder') {
-                return res.status(400).json({ error: 'Target must be a folder' });
+            const isRoot = targetPath === '' || targetPath === '/';
+            let targetFolder = null;
+            if (!isRoot) {
+                targetFolder = await this.fileModel.getByPath(targetPath);
+                if (!targetFolder) {
+                    return res.status(404).json({ error: 'Target folder not found' });
+                }
+
+                if (targetFolder.type !== 'folder') {
+                    return res.status(400).json({ error: 'Target must be a folder' });
+                }
             }
             
             // Create the new path for the moved file
             const fileName = sourcePath.split('/').pop();
-            const newPath = targetPath === '/' ? `/${fileName}` : `${targetPath}/${fileName}`;
+            const baseTarget = isRoot ? '' : targetPath.replace(/\/$/, '');
+            const newPath = isRoot ? `${fileName}` : `${baseTarget}/${fileName}`;
             
             // Check if file with new path already exists
             const existingFile = await this.fileModel.getByPath(newPath);
@@ -159,7 +162,7 @@ class FileController {
             // Update the file's path and parentPath
             await this.fileModel.update(sourcePath, {
                 path: newPath,
-                parentPath: targetPath
+                parentPath: isRoot ? '' : baseTarget
             });
             
             // If it's a folder, update all children paths
