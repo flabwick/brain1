@@ -95,6 +95,8 @@ The frontend follows a component-based architecture:
 }
 ```
 
+The server creates a unique index on the `path` field to prevent duplicate files and folders.
+
 ### Prompts Collection
 
 ```javascript

@@ -1,5 +1,6 @@
 // File controller - handles file-related operations
 const FileModel = require('../models/file');
+const { normalizePath, normalizeParentPath } = require('../util/pathUtils');
 
 class FileController {
     constructor(db) {
@@ -20,7 +21,7 @@ class FileController {
     // Get a single file by path
     async getFile(req, res) {
         try {
-            const path = req.query.path;
+            const path = normalizePath(req.query.path);
             
             if (!path) {
                 return res.status(400).json({ error: 'File path is required' });
@@ -43,13 +44,30 @@ class FileController {
     async createFile(req, res) {
         try {
             const fileData = req.body;
-            
+
+            // Normalize paths
+            fileData.path = normalizePath(fileData.path);
+            fileData.parentPath = normalizeParentPath(fileData.parentPath);
+
+            // Prevent folder from being its own parent
+            if (fileData.path === fileData.parentPath) {
+                return res.status(400).json({ error: 'A folder cannot be its own parent' });
+            }
+
+            // If parent path is specified, ensure it exists and is a folder
+            if (fileData.parentPath) {
+                const parent = await this.fileModel.getByPath(fileData.parentPath);
+                if (!parent || parent.type !== 'folder') {
+                    return res.status(400).json({ error: 'Parent folder does not exist' });
+                }
+            }
+
             // Check if file with this path already exists
             const existingFile = await this.fileModel.getByPath(fileData.path);
             if (existingFile) {
                 return res.status(409).json({ error: 'File or folder with this path already exists' });
             }
-            
+
             const newFile = await this.fileModel.create(fileData);
             res.status(201).json(newFile);
         } catch (error) {
@@ -61,7 +79,7 @@ class FileController {
     // Update file content or metadata
     async updateFile(req, res) {
         try {
-            const path = req.query.path;
+            const path = normalizePath(req.query.path);
             const updateData = req.body;
             
             if (!path) {
@@ -123,7 +141,10 @@ class FileController {
     // Move file or folder to a new location
     async moveFile(req, res) {
         try {
-            const { sourcePath, targetPath } = req.body;
+            let { sourcePath, targetPath } = req.body;
+
+            sourcePath = normalizePath(sourcePath);
+            targetPath = normalizeParentPath(targetPath);
 
             if (!sourcePath || targetPath === undefined || targetPath === null) {
                 return res.status(400).json({ error: 'Source path and target path are required' });
@@ -136,6 +157,11 @@ class FileController {
             }
             
             const isRoot = targetPath === '' || targetPath === '/';
+
+            // Prevent moving a folder inside itself or its descendants
+            if (!isRoot && sourceFile.type === 'folder' && targetPath.startsWith(sourcePath)) {
+                return res.status(400).json({ error: 'Cannot move a folder inside itself' });
+            }
             let targetFolder = null;
             if (!isRoot) {
                 targetFolder = await this.fileModel.getByPath(targetPath);
@@ -150,7 +176,7 @@ class FileController {
             
             // Create the new path for the moved file
             const fileName = sourcePath.split('/').pop();
-            const baseTarget = isRoot ? '' : targetPath.replace(/\/$/, '');
+            const baseTarget = isRoot ? '' : targetPath;
             const newPath = isRoot ? `${fileName}` : `${baseTarget}/${fileName}`;
             
             // Check if file with new path already exists
@@ -172,8 +198,8 @@ class FileController {
                 
                 // Update each child's path
                 for (const child of children) {
-                    const newChildPath = child.path.replace(sourcePath, newPath);
-                    const newParentPath = child.parentPath.replace(sourcePath, newPath);
+                    const newChildPath = normalizePath(child.path.replace(sourcePath, newPath));
+                    const newParentPath = normalizeParentPath(child.parentPath.replace(sourcePath, newPath));
                     
                     await this.fileModel.update(child.path, {
                         path: newChildPath,

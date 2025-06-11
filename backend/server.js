@@ -54,6 +54,9 @@ async function initServer() {
     try {
         // Connect to database
         const db = await connectDB();
+
+        // Ensure unique index on file paths
+        await db.collection('files').createIndex({ path: 1 }, { unique: true });
         
         // Import controllers for direct routes
         const FileController = require('./controllers/fileController');
