@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>File Tree</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <ul id="file-tree" class="tree root">
+    <li class="folder" draggable="true">
+      <span class="label">Folder A</span>
+      <ul>
+        <li class="file" draggable="true"><span class="label">File 1.txt</span></li>
+        <li class="folder" draggable="true">
+          <span class="label">Subfolder</span>
+          <ul>
+            <li class="file" draggable="true"><span class="label">Nested File.txt</span></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li class="file" draggable="true"><span class="label">File at root.txt</span></li>
+  </ul>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
